@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ملجئي | Magic</title>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@700&family=Cairo:wght@400;700;900&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        :root { 
+            --dark-pink: #1a001a;
+            --mid-pink: #4a004a;
+            --neon-pink: #ff00ff;
+            --primary: #ff4d4d;
+            --glass: rgba(255, 255, 255, 0.1);
+            --gold: #ffd700;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body { 
+            margin: 0; 
+            font-family: 'Cairo', sans-serif; 
+            background: linear-gradient(0deg, var(--dark-pink) 0%, var(--mid-pink) 100%);
+            color: #fff; 
+            overflow: hidden; 
+            height: 100vh; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            perspective: 1200px;
+        }
+
+        .aurora-bg {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(45deg, #2b002b, #4a004a, #1a001a, #000);
+            background-size: 400% 400%; animation: gradientBG 15s ease infinite;
+            z-index: -1;
+        }
+        @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+
+        .lights { position: absolute; top: 0; width: 100%; display: flex; justify-content: space-around; z-index: 10; padding: 10px 0; }
+        .light { width: 12px; height: 12px; border-radius: 50%; animation: blink 0.8s infinite alternate ease-in-out; }
+        @keyframes blink { 
+            0% { opacity: 0.3; transform: scale(0.8); box-shadow: 0 0 10px currentColor; } 
+            100% { opacity: 1; transform: scale(1.3); box-shadow: 0 0 20px currentColor; } 
+        }
+
+        #heart-canvas { position: fixed; top: 0; left: 0; pointer-events: none; z-index: 1; }
+
+        .gift-pulse {
+            font-size: 5rem;
+            display: inline-block;
+            animation: heartBeat 1.5s infinite ease-in-out;
+            filter: drop-shadow(0 0 15px var(--neon-pink));
+            margin: 10px 0;
+        }
+        @keyframes heartBeat {
+            0% { transform: scale(1); }
+            14% { transform: scale(1.15); }
+            28% { transform: scale(1); }
+            42% { transform: scale(1.15); }
+            70% { transform: scale(1); }
+        }
+
+        .page { 
+            position: absolute; width: 92%; max-width: 450px; height: 90vh;
+            display: none; flex-direction: column; align-items: center; 
+            text-align: center; z-index: 5;
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .active { display: flex; animation: slideUpFade 0.8s forwards; }
+        @keyframes slideUpFade {
+            from { opacity: 0; transform: translateY(50px) rotateX(-10deg); }
+            to { opacity: 1; transform: translateY(0) rotateX(0deg); }
+        }
+
+        .card-glass {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 40px;
+            padding: 25px;
+            width: 100%;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            margin-bottom: 20px;
+        }
+
+        input { 
+            width: 100%; height: 50px; border-radius: 25px; border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(0,0,0,0.3); color: #fff; text-align: center; margin: 15px 0; font-size: 1rem;
+        }
+
+        .unlock-btn { 
+            width: 100%; padding: 15px; border-radius: 25px; border: none;
+            background: linear-gradient(45deg, #db00db, #ff69b4); color: white;
+            font-weight: bold; cursor: pointer; box-shadow: 0 5px 15px rgba(255,0,255,0.3);
+            transition: 0.3s; margin-top: 10px;
+        }
+
+        .message-scroll {
+            max-height: 200px; overflow-y: auto; margin-bottom: 20px;
+            line-height: 1.7; font-size: 16px; text-align: center;
+            padding: 15px; background: rgba(0,0,0,0.2); border-radius: 20px;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        .candle-flame {
+            position: absolute; top: 45.1%; left: 77.3%;
+            transform: translate(-50%, -100%);
+            width: 12px; height: 22px;
+            background: radial-gradient(circle at bottom, #fff, #ffcc00, #ff4500);
+            border-radius: 50% 50% 20% 20%;
+            animation: flicker 0.1s infinite alternate;
+        }
+        @keyframes flicker { 0% { transform: translate(-50%, -100%) scale(1); } 100% { transform: translate(-50%, -100%) scale(1.1); } }
+        .out .candle-flame { display: none; }
+
+        .video-container {
+            width: 100%; border-radius: 20px; overflow: hidden;
+            border: 2px solid var(--neon-pink); margin-bottom: 15px;
+            background: #000; box-shadow: 0 0 15px var(--neon-pink);
+            position: relative;
+            min-height: 200px;
+        }
+
+        #finalVideo {
+            width: 100%;
+            height: auto;
+            display: block;
+            object-fit: contain;
+        }
+
+        .shik-img {
+            width: 100%; border-radius: 20px; border: 2px solid var(--glass);
+            margin-bottom: 15px; display: block; box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .final-msg {
+            display: none; margin-top: 20px; font-family: 'Amiri', serif;
+            font-size: 2rem; color: var(--gold); text-shadow: 0 0 10px var(--gold);
+            animation: slideUpFade 0.5s forwards;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="aurora-bg"></div>
+    <div class="lights" id="top-lights"></div>
+    <canvas id="heart-canvas"></canvas>
+
+    <audio id="bgAudio" loop>
+        <source src="https://i.top4top.io/m_3690zkisy1.mp3" type="audio/mpeg">
+    </audio>
+
+    <section id="p1" class="page active" style="justify-content: center;">
+        <div class="card-glass">
+            <div style="background:#db00db; display:inline-block; padding: 5px 20px; border-radius:15px; font-weight:bold; margin-bottom:10px; box-shadow: 0 0 15px #db00db;">✨ 22 سنة ✨</div>
+            <div class="gift-pulse">🎁</div>
+            <h1 style="font-family: 'Amiri', serif; font-size: 2rem; margin: 5px 0;">Happy Birthday</h1>
+            <div style="font-family: 'Dancing Script', cursive; font-size: 2.2rem; color: var(--gold);">نور 🥹</div>
+            <p>النهارده عيد ميلادك 🙈😊</p>
+            <input type="text" id="passCode" placeholder="اكتب الباسورد يا بطل 🤭🌝">
+            <button class="unlock-btn" onclick="checkPassword()">دوس هنا بقا متوجعش دماغنا 🤭😹</button>
+        </div>
+    </section>
+
+    <section id="p2" class="page" style="overflow-y: auto; padding-top: 30px;">
+        <div class="card-glass">
+            <h3 style="color: #ff69b4; margin-top:0;">إلى ملجئي :</h3>
+            <div class="message-scroll">
+                كل سنه وانت طيب ومعاايا وكل سنه وانت اغلي واحن واحد علي قلبي كل سنه وانت اجمل قمر انا بحبو وعقبال مليون سنه واحنا سوا وعلي قلبك كدا كدا ربنا يخليك ليا وتكون سنه حلوه عليك وتحقق اللي نفسك فيه يابابا 🎂😍♥️
+            </div>
+            
+            <div class="flork-box" id="candleArea" onclick="blowOut()" style="position:relative; width: 220px; margin: auto; cursor: pointer;">
+                <img src="https://files.catbox.moe/blura9.png" style="width:100%;">
+                <div class="candle-flame"></div>
+            </div>
+            <p style="font-size: 14px; opacity: 0.9; margin-top: 15px;">( اتمنَ أمنيتك ثم انفخ في الشمعة 🕯️ )</p>
+        </div>
+    </section>
+
+    <section id="p3" class="page" style="overflow-y: auto; padding: 20px 10px;">
+        <div class="video-container">
+            <video id="finalVideo" playsinline loop muted preload="auto">
+                <source src="https://f.top4top.io/m_36907txgd1.mp4" type="video/mp4">
+                متصفحك لا يدعم تشغيل الفيديو.
+            </video>
+        </div>
+
+        <div class="card-glass">
+            <p style="font-size: 15px; line-height: 1.8;">مبدئيا كدا مش عارفه اقولك ايه غير شكرا علي وجودك في حياتي وانك جيت عوضتني عن حاجات كتير وحشه شوفتها من قبلك وانك علي قد ما تقدر بتعمل كل حاجه بتفرحني وحنين عليا زي بابا بالظبط كل سنه وانت الدنيا وما فيها ♥️</p>
+        </div>
+
+        <img src="https://e.top4top.io/p_3690973wd1.jpg" class="shik-img">
+        <img src="https://b.top4top.io/p_36900apgn1.jpg" class="shik-img">
+
+        <div class="card-glass">
+            <p style="font-size: 15px; line-height: 1.8;">انت اكيد عارف انا بحبك قد ايه وانك احلي حاجه حصلتلي عموما صدقني انت احسن من اي حد وعمرك ما كنت وحش معايا برغم الخلافات الكتير والزعل اللي بيحصل بينا بس زي ما انت قولت كل دا بيقوي علاقتنا ببعض كل مره بشوف أنك باقي عليك مخذلتنيش فيك ولا قسيت عليا غير عشان مصلحتي انا بحبك اوي 🫂♥️</p>
+        </div>
+
+        <img src="https://c.top4top.io/p_3690g6vgm1.jpg" class="shik-img">
+        <img src="https://d.top4top.io/p_3690smcqn1.jpg" class="shik-img">
+
+        <button class="unlock-btn" id="finalBtn" onclick="showFinalText()">دوس</button>
+        <div id="finalMsg" class="final-msg">كل سنه وانت طيب♥😍</div>
+        
+        <div style="height: 50px;"></div> 
+    </section>
+
+    <script>
+        const audio = document.getElementById('bgAudio');
+        const finalVideo = document.getElementById('finalVideo');
+
+        // أنوار الزينة
+        const lightsContainer = document.getElementById('top-lights');
+        for(let i=0; i<20; i++) {
+            const light = document.createElement('div');
+            light.className = 'light';
+            light.style.backgroundColor = ['#ff00ff', '#ffffff', '#00ffff'][i % 3];
+            light.style.animationDelay = (i * 0.1) + 's';
+            lightsContainer.appendChild(light);
+        }
+
+        // انيميشن القلوب
+        const canvas = document.getElementById('heart-canvas');
+        const ctx = canvas.getContext('2d');
+        let width, height, hearts = [];
+
+        function initHearts() {
+            width = window.innerWidth; height = window.innerHeight;
+            canvas.width = width; canvas.height = height;
+            hearts = Array.from({length: 35}, () => ({
+                x: Math.random() * width, y: Math.random() * height,
+                size: Math.random() * 15 + 10, speed: Math.random() * 0.5 + 0.2,
+                opacity: Math.random() * 0.5, type: Math.random() > 0.5 ? '💖' : '❤️'
+            }));
+        }
+
+        function drawHearts() {
+            ctx.clearRect(0, 0, width, height);
+            hearts.forEach(h => {
+                ctx.globalAlpha = h.opacity; ctx.font = `${h.size}px Arial`;
+                ctx.fillText(h.type, h.x, h.y); h.y += h.speed;
+                if(h.y > height) h.y = -20;
+            });
+            requestAnimationFrame(drawHearts);
+        }
+
+        function checkPassword() {
+            const pass = document.getElementById('passCode').value;
+            if(pass === "28/8/2025") {
+                audio.play().catch(e => console.log("Audio needs interaction"));
+                document.getElementById('p1').classList.remove('active');
+                document.getElementById('p2').classList.add('active');
+                // تفعيل المايك فوراً بعد الباسورد
+                initMic();
+            } else { alert("الباسورد غلط يا بطل! 😂"); }
+        }
+
+        async function initMic() {
+            try {
+                // طلب الإذن للمايك
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const analyser = audioContext.createAnalyser();
+                const microphone = audioContext.createMediaStreamSource(stream);
+                microphone.connect(analyser);
+                analyser.fftSize = 256;
+                const bufferLength = analyser.frequencyBinCount;
+                const dataArray = new Uint8Array(bufferLength);
+
+                function checkBlow() {
+                    analyser.getByteFrequencyData(dataArray);
+                    let sum = 0;
+                    for (let i = 0; i < bufferLength; i++) {
+                        sum += dataArray[i];
+                    }
+                    let average = sum / bufferLength;
+
+                    // لو الصوت عالي (نفخة) اطفي الشمعة
+                    if (average > 60) { 
+                        blowOut();
+                        stream.getTracks().forEach(track => track.stop()); // قفل المايك بعد النفخ
+                    } else {
+                        requestAnimationFrame(checkBlow);
+                    }
+                }
+                checkBlow();
+            } catch (err) {
+                console.log("المايك مش شغال أو اليوزر رفض الإذن", err);
+            }
+        }
+
+        function blowOut() {
+            const b = document.getElementById('candleArea');
+            if (b.classList.contains('out')) return;
+            b.classList.add('out');
+            confetti({ particleCount: 200, spread: 70, origin: { y: 0.7 }, colors: ['#ff00ff', '#ffffff', '#ffd700'] });
+            
+            setTimeout(() => {
+                audio.pause();
+                audio.currentTime = 0;
+
+                document.getElementById('p2').classList.remove('active');
+                document.getElementById('p3').classList.add('active');
+                document.body.style.overflowY = "auto"; 
+                
+                finalVideo.muted = false;
+                const playPromise = finalVideo.play();
+                
+                if (playPromise !== undefined) {
+                    playPromise.catch(error => {
+                        finalVideo.muted = true;
+                        finalVideo.play();
+                    });
+                }
+            }, 2500);
+        }
+
+        function showFinalText() {
+            document.getElementById('finalBtn').style.display = "none";
+            document.getElementById('finalMsg').style.display = "block";
+            confetti({ particleCount: 100, spread: 60, origin: { y: 0.8 } });
+        }
+
+        window.addEventListener('resize', initHearts);
+        initHearts(); drawHearts();
+    </script>
+</body>
+</html>
